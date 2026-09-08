@@ -1,33 +1,22 @@
-# Node.js
+# Dependencies
 node_modules/
-
-# Python
 .venv/
 venv/
-__pycache__/
-*.py[cod]
 
-# Environment variables
+# Python
+pycache/
+*.pyc
+
+# Environment secrets
 .env
-.env.*
-!.env.example
 
-# Database
+# Databases
 *.db
 
-# Logs
-*.log
-
-# Build files
+# Build output
 dist/
 build/
 
-# VS Code
-.vscode/
-
-# Other IDE files
-.idea/
-
-# OS files
+# Editor/OS junk
 .DS_Store
-Thumbs.db
+.vscode/
