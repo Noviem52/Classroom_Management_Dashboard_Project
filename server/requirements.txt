@@ -8,3 +8,4 @@ pydantic-settings
 passlib[bycrypt]
 python-jose[cryptography]
 python-multipart
+boto3
