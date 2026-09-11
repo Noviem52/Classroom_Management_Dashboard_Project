@@ -1,0 +1,34 @@
+from fastapi import APIRouter, Depends, Response
+from sqlalchemy import select, func, or_
+from sqlalchemy.orm import Session
+
+from app.db.session import get_db
+from app.models.department import Department
+from app.schemas.department import DepartmentRead
+
+router = APIRouter(prefix="/api/departments", tags=["departments"])
+
+
+@router.get("", response_model=list[DepartmentRead])
+def list_departments(
+    response: Response,
+    db: Session = Depends(get_db),
+    q: str | None = None,
+    _start: int = 0,
+    _end: int = 10,
+):
+    query = select(Department)
+
+    if q:
+        query = query.where(
+            or_(Department.name.ilike(f"%{q}%"), Department.code.ilike(f"%{q}%"))
+        )
+
+    total = db.scalar(select(func.count()).select_from(query.subquery()))
+
+    departments = db.execute(
+        query.order_by(Department.id).offset(_start).limit(_end - _start)
+    ).scalars().all()
+
+    response.headers["X-Total-Count"] = str(total)
+    return departments
