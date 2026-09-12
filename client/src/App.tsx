@@ -17,9 +17,11 @@ import routerProvider, {
 import { dataProvider } from "./providers/data";
 import { SubjectList } from "./pages/subjects/list";
 import { DepartmentList } from "./pages/departments/list";
-//import { Login } from "./pages/login";
-//import { Register } from "./pages/register";
-//import { ForgotPassword } from "./pages/forgot-password";
+import { ClassList } from "./pages/classes/list";
+import { ClassShow } from "./pages/classes/show";
+// import { Login } from "./pages/login"; // TODO: Day 4 - auth pages
+// import { Register } from "./pages/register"; // TODO: Day 4 - auth pages
+// import { ForgotPassword } from "./pages/forgot-password"; // TODO: Day 4 - auth pages
 import { ErrorComponent } from "./components/refine-ui/layout/error-component";
 import { Layout } from "./components/refine-ui/layout/layout";
 import { Header } from "./components/refine-ui/layout/header";
@@ -48,6 +50,11 @@ function App() {
                   name: "subjects",
                   list: "/subjects",
                 },
+                {
+                  name: "classes",
+                  list: "/classes",
+                  show: "/classes/:id",
+                },
               ]}
               options={{
                 syncWithLocation: true,
@@ -69,6 +76,8 @@ function App() {
                   />
                   <Route path="/subjects" element={<SubjectList />} />
                   <Route path="/departments" element={<DepartmentList />} />
+                  <Route path="/classes" element={<ClassList />} />
+                  <Route path="/classes/:id" element={<ClassShow />} />
                 </Route>
                 <Route path="*" element={<ErrorComponent />} />
               </Routes>
