@@ -15,9 +15,11 @@ import routerProvider, {
   DocumentTitleHandler,
 } from "@refinedev/react-router";
 import { dataProvider } from "./providers/data";
-import { Login } from "./pages/login";
-import { Register } from "./pages/register";
-import { ForgotPassword } from "./pages/forgot-password";
+import { SubjectList } from "./pages/subjects/list";
+import { DepartmentList } from "./pages/departments/list";
+//import { Login } from "./pages/login";
+//import { Register } from "./pages/register";
+//import { ForgotPassword } from "./pages/forgot-password";
 import { ErrorComponent } from "./components/refine-ui/layout/error-component";
 import { Layout } from "./components/refine-ui/layout/layout";
 import { Header } from "./components/refine-ui/layout/header";
@@ -37,6 +39,16 @@ function App() {
               dataProvider={dataProvider}
               notificationProvider={useNotificationProvider()}
               routerProvider={routerProvider}
+              resources={[
+                {
+                  name: "departments",
+                  list: "/departments",
+                },
+                {
+                  name: "subjects",
+                  list: "/subjects",
+                },
+              ]}
               options={{
                 syncWithLocation: true,
                 warnWhenUnsavedChanges: true,
@@ -44,7 +56,21 @@ function App() {
               }}
             >
               <Routes>
-                <Route index element={<WelcomePage />} />
+                <Route
+                  element={
+                    <Layout>
+                      <Outlet />
+                    </Layout>
+                  }
+                >
+                  <Route
+                    index
+                    element={<NavigateToResource resource="subjects" />}
+                  />
+                  <Route path="/subjects" element={<SubjectList />} />
+                  <Route path="/departments" element={<DepartmentList />} />
+                </Route>
+                <Route path="*" element={<ErrorComponent />} />
               </Routes>
               <Toaster />
               <RefineKbar />
