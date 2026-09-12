@@ -61,6 +61,6 @@ def get_class(class_id: int, db: Session = Depends(get_db)):
         select(func.count()).select_from(Enrollment).where(Enrollment.class_id == class_id)
     )
 
-    result = ClassDetailRead.model_validate(class_obj)
-    result.enrolled_count = enrolled_count
-    return result
+    class_dict = ClassRead.model_validate(class_obj).model_dump()
+    class_dict["enrolled_count"] = enrolled_count
+    return ClassDetailRead(**class_dict)
