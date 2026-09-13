@@ -15,13 +15,14 @@ import routerProvider, {
   DocumentTitleHandler,
 } from "@refinedev/react-router";
 import { dataProvider } from "./providers/data";
+import { authProvider } from "./providers/auth";
 import { SubjectList } from "./pages/subjects/list";
 import { DepartmentList } from "./pages/departments/list";
 import { ClassList } from "./pages/classes/list";
 import { ClassShow } from "./pages/classes/show";
-// import { Login } from "./pages/login"; // TODO: Day 4 - auth pages
-// import { Register } from "./pages/register"; // TODO: Day 4 - auth pages
-// import { ForgotPassword } from "./pages/forgot-password"; // TODO: Day 4 - auth pages
+import { ClassCreate } from "./pages/classes/create";
+import { Login } from "./pages/login";
+import { Register } from "./pages/register";
 import { ErrorComponent } from "./components/refine-ui/layout/error-component";
 import { Layout } from "./components/refine-ui/layout/layout";
 import { Header } from "./components/refine-ui/layout/header";
@@ -39,21 +40,17 @@ function App() {
           <DevtoolsProvider>
             <Refine
               dataProvider={dataProvider}
+              authProvider={authProvider}
               notificationProvider={useNotificationProvider()}
               routerProvider={routerProvider}
               resources={[
-                {
-                  name: "departments",
-                  list: "/departments",
-                },
-                {
-                  name: "subjects",
-                  list: "/subjects",
-                },
+                { name: "departments", list: "/departments" },
+                { name: "subjects", list: "/subjects" },
                 {
                   name: "classes",
                   list: "/classes",
                   show: "/classes/:id",
+                  create: "/classes/create",
                 },
               ]}
               options={{
@@ -63,11 +60,16 @@ function App() {
               }}
             >
               <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+
                 <Route
                   element={
-                    <Layout>
-                      <Outlet />
-                    </Layout>
+                    <Authenticated key="protected" redirectOnFail="/login">
+                      <Layout>
+                        <Outlet />
+                      </Layout>
+                    </Authenticated>
                   }
                 >
                   <Route
@@ -77,8 +79,10 @@ function App() {
                   <Route path="/subjects" element={<SubjectList />} />
                   <Route path="/departments" element={<DepartmentList />} />
                   <Route path="/classes" element={<ClassList />} />
+                  <Route path="/classes/create" element={<ClassCreate />} />
                   <Route path="/classes/:id" element={<ClassShow />} />
                 </Route>
+
                 <Route path="*" element={<ErrorComponent />} />
               </Routes>
               <Toaster />
