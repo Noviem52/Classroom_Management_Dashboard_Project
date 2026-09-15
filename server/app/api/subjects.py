@@ -1,10 +1,15 @@
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Response, HTTPException
 from sqlalchemy import select, func, or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.db.session import get_db
 from app.models.subject import Subject
 from app.schemas.subject import SubjectRead
+
+from app.models.user import User, UserRole
+from app.models.department import Department
+from app.schemas.subject_create import SubjectCreate
+from app.api.deps import require_role
 
 router = APIRouter(prefix="/api/subjects", tags=["subjects"])
 
@@ -36,3 +41,19 @@ def list_subjects(
 
     response.headers["X-Total-Count"] = str(total)
     return subjects
+
+@router.post("", response_model=SubjectRead, status_code=201)
+def create_subject(
+    payload: SubjectCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(UserRole.admin)),
+):
+    department = db.get(Department, payload.department_id)
+    if department is None:
+        raise HTTPException(status_code=404, detail="Department not found")
+
+    new_subject = Subject(**payload.model_dump())
+    db.add(new_subject)
+    db.commit()
+    db.refresh(new_subject)
+    return new_subject
