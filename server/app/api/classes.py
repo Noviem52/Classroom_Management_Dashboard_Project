@@ -8,6 +8,13 @@ from app.models.subject import Subject
 from app.models.enrollment import Enrollment
 from app.schemas.class_ import ClassRead, ClassDetailRead
 
+from sqlalchemy.exc import IntegrityError
+
+from app.models.user import User, UserRole
+from app.schemas.class_create import ClassCreate
+from app.core.security import generate_invite_code
+from app.api.deps import require_role
+
 router = APIRouter(prefix="/api/classes", tags=["classes"])
 
 
@@ -64,3 +71,36 @@ def get_class(class_id: int, db: Session = Depends(get_db)):
     class_dict = ClassRead.model_validate(class_obj).model_dump()
     class_dict["enrolled_count"] = enrolled_count
     return ClassDetailRead(**class_dict)
+
+@router.post("", response_model=ClassRead, status_code=201)
+def create_class(
+    payload: ClassCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(UserRole.teacher, UserRole.admin)),
+):
+    subject = db.get(Subject, payload.subject_id)
+    if subject is None:
+        raise HTTPException(status_code=404, detail="Subject not found")
+
+    teacher = db.get(User, payload.teacher_id)
+    if teacher is None or teacher.role != UserRole.teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+
+    new_class = Class(
+        subject_id=payload.subject_id,
+        teacher_id=payload.teacher_id,
+        name=payload.name,
+        description=payload.description,
+        capacity=payload.capacity,
+        invite_code=generate_invite_code(),
+    )
+
+    db.add(new_class)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Invite code collision, please retry")
+
+    db.refresh(new_class)
+    return new_class

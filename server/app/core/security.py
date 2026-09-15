@@ -4,6 +4,8 @@ from jose import jwt
 from passlib.context import CryptContext
 
 from app.core.config import settings
+import secrets
+import string
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -27,3 +29,7 @@ def create_access_token(subject: str, role: str) -> str:
 
 def decode_access_token(token: str) -> dict:
     return jwt.decode(token, settings.JWT_SECRET, algorithms=[ALGORITHM])
+
+def generate_invite_code(length: int = 8) -> str:
+    alphabet = string.ascii_uppercase + string.digits
+    return "".join(secrets.choice(alphabet) for _ in range(length))
