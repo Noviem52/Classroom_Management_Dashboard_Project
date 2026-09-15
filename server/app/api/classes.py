@@ -93,6 +93,7 @@ def create_class(
         description=payload.description,
         capacity=payload.capacity,
         invite_code=generate_invite_code(),
+        banner_url=payload.banner_url,
     )
 
     db.add(new_class)
