@@ -1,33 +1,40 @@
-import { useTable } from "@refinedev/core";
+import { useMemo } from "react";
+import { useTable } from "@refinedev/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/components/refine-ui/data-table/data-table";
+
+type Department = {
+  id: number;
+  code: string;
+  name: string;
+  description: string | null;
+};
 
 export const DepartmentList = () => {
-  const { tableQuery, result } = useTable({
-    resource: "departments",
+  const columns = useMemo<ColumnDef<Department>[]>(
+    () => [
+      { accessorKey: "code", header: "Code" },
+      { accessorKey: "name", header: "Name" },
+      {
+        accessorKey: "description",
+        header: "Description",
+        cell: ({ row }) => row.original.description ?? "-",
+      },
+    ],
+    []
+  );
+
+  const table = useTable<Department>({
+    columns,
+    refineCoreProps: {
+      resource: "departments",
+    },
   });
 
-  if (tableQuery.isLoading) return <div>Loading...</div>;
-
   return (
-    <div>
-      <h1>Departments</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Code</th>
-            <th>Name</th>
-            <th>Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          {result?.data?.map((department: any) => (
-            <tr key={department.id}>
-              <td>{department.code}</td>
-              <td>{department.name}</td>
-              <td>{department.description}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4 text-foreground">Departments</h1>
+      <DataTable table={table} />
     </div>
   );
 };

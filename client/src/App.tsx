@@ -1,6 +1,5 @@
 import {
   Refine,
-  GitHubBanner,
   WelcomePage,
   Authenticated,
 } from "@refinedev/core";
@@ -15,13 +14,14 @@ import routerProvider, {
   DocumentTitleHandler,
 } from "@refinedev/react-router";
 import { dataProvider } from "./providers/data";
+import { authProvider } from "./providers/auth";
 import { SubjectList } from "./pages/subjects/list";
 import { DepartmentList } from "./pages/departments/list";
 import { ClassList } from "./pages/classes/list";
 import { ClassShow } from "./pages/classes/show";
-// import { Login } from "./pages/login"; // TODO: Day 4 - auth pages
-// import { Register } from "./pages/register"; // TODO: Day 4 - auth pages
-// import { ForgotPassword } from "./pages/forgot-password"; // TODO: Day 4 - auth pages
+import { ClassCreate } from "./pages/classes/create";
+import { Login } from "./pages/login";
+import { Register } from "./pages/register";
 import { ErrorComponent } from "./components/refine-ui/layout/error-component";
 import { Layout } from "./components/refine-ui/layout/layout";
 import { Header } from "./components/refine-ui/layout/header";
@@ -33,36 +33,52 @@ import "./App.css";
 function App() {
   return (
     <BrowserRouter>
-      <GitHubBanner />
       <RefineKbarProvider>
         <ThemeProvider>
           <DevtoolsProvider>
             <Refine
               dataProvider={dataProvider}
+              authProvider={authProvider}
               notificationProvider={useNotificationProvider()}
               routerProvider={routerProvider}
               resources={[
-                {
-                  name: "departments",
-                  list: "/departments",
-                },
-                {
-                  name: "subjects",
-                  list: "/subjects",
-                },
+                { name: "departments", list: "/departments" },
+                { name: "subjects", list: "/subjects" },
                 {
                   name: "classes",
                   list: "/classes",
                   show: "/classes/:id",
+                  create: "/classes/create",
                 },
               ]}
               options={{
                 syncWithLocation: true,
                 warnWhenUnsavedChanges: true,
                 projectId: "AmKgZW-XGf0oB-Goxm3u",
+                title: {
+                  text: "Classroom",
+                  icon: <span style={{ fontSize: "1.1rem" }}>🎓</span>,
+                },
               }}
             >
               <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+
+                {/* TEMP: <Authenticated> wrapper removed for UI preview.
+                    Put it back before final testing! Original version:
+
+                <Route
+                  element={
+                    <Authenticated key="protected" redirectOnFail="/login">
+                      <Layout>
+                        <Outlet />
+                      </Layout>
+                    </Authenticated>
+                  }
+                >
+                */}
+                
                 <Route
                   element={
                     <Layout>
@@ -77,8 +93,10 @@ function App() {
                   <Route path="/subjects" element={<SubjectList />} />
                   <Route path="/departments" element={<DepartmentList />} />
                   <Route path="/classes" element={<ClassList />} />
+                  <Route path="/classes/create" element={<ClassCreate />} />
                   <Route path="/classes/:id" element={<ClassShow />} />
                 </Route>
+
                 <Route path="*" element={<ErrorComponent />} />
               </Routes>
               <Toaster />

@@ -243,21 +243,49 @@ function SidebarHeader() {
           }
         )}
       >
-        <div>{title.icon}</div>
-        <h2
+        <div
           className={cn(
-            "text-sm",
-            "font-bold",
-            "transition-opacity",
-            "duration-200",
-            {
-              "opacity-0": !open,
-              "opacity-100": open,
-            }
+            "flex",
+            "items-center",
+            "justify-center",
+            "rounded-full",
+            "bg-sidebar-primary",
+            "text-sidebar-primary-foreground",
+            "shrink-0"
           )}
+          style={{ width: 30, height: 30, fontSize: 14 }}
         >
-          {title.text}
-        </h2>
+          {title.icon}
+        </div>
+        <div
+          className={cn("transition-opacity", "duration-200", {
+            "opacity-0": !open,
+            "opacity-100": open,
+          })}
+        >
+          <h2
+            className={cn(
+              "font-serif",
+              "text-sm",
+              "font-bold",
+              "leading-tight",
+              "text-sidebar-foreground"
+            )}
+          >
+            {title.text}
+          </h2>
+          <p
+            className={cn(
+              "text-[10px]",
+              "italic",
+              "text-muted-foreground",
+              "leading-tight",
+              "mt-1"
+            )}
+          > 
+            Your academic workspace
+          </p>
+        </div>
       </div>
 
       <ShadcnSidebarTrigger
