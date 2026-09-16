@@ -24,21 +24,18 @@ export const Header = () => {
 function DesktopHeader() {
   return (
     <header
-      className={cn(
-        "sticky",
-        "top-0",
-        "flex",
-        "h-16",
-        "shrink-0",
-        "items-center",
-        "gap-4",
-        "border-b",
-        "border-border",
-        "bg-sidebar",
-        "pr-3",
-        "justify-end",
-        "z-40"
-      )}
+     className={cn(
+      "sticky",
+      "top-0",
+      "flex",
+      "h-16",
+      "shrink-0",
+      "items-center",
+      "gap-4",
+      "pr-3",
+      "justify-end",
+      "z-40"
+)}
     >
       <ThemeToggle />
       <UserDropdown />
@@ -61,9 +58,6 @@ function MobileHeader() {
         "shrink-0",
         "items-center",
         "gap-2",
-        "border-b",
-        "border-border",
-        "bg-sidebar",
         "pr-3",
         "justify-between",
         "z-40"

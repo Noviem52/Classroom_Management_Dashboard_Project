@@ -1,0 +1,10 @@
+[33m41fa483[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m fix enrolled_count validation error in class detail endpoint
+[33m3c5318b[m Merge branch 'feat/subject-list'
+[33m6d35b5e[m day 3: classes endpoints with joins and filters
+[33m2be6532[m[33m ([m[1;31morigin/feat/subject-list[m[33m, [m[1;32mfeat/subject-list[m[33m)[m feat: add departments and subjects routes with sidebar navigation
+[33mfa10914[m Add models files
+[33m9eac7ae[m pin bcrypt version for passlib compatibility
+[33m7926ad4[m Update day2 server folder
+[33m54bbeb5[m restore model fixes from server branch into main
+[33maa3d5e4[m fix: pin dependency versions, fix passlib bcrypt typo, resolve python 3.14 compatibility by using 3.13
+[33m9c68669[m updated server/.env.example

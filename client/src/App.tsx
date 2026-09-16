@@ -1,6 +1,5 @@
 import {
   Refine,
-  GitHubBanner,
   WelcomePage,
   Authenticated,
 } from "@refinedev/core";
@@ -34,7 +33,6 @@ import "./App.css";
 function App() {
   return (
     <BrowserRouter>
-      <GitHubBanner />
       <RefineKbarProvider>
         <ThemeProvider>
           <DevtoolsProvider>
@@ -57,11 +55,18 @@ function App() {
                 syncWithLocation: true,
                 warnWhenUnsavedChanges: true,
                 projectId: "AmKgZW-XGf0oB-Goxm3u",
+                title: {
+                  text: "Classroom",
+                  icon: <span style={{ fontSize: "1.1rem" }}>🎓</span>,
+                },
               }}
             >
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+
+                {/* TEMP: <Authenticated> wrapper removed for UI preview.
+                    Put it back before final testing! Original version:
 
                 <Route
                   element={
@@ -70,6 +75,15 @@ function App() {
                         <Outlet />
                       </Layout>
                     </Authenticated>
+                  }
+                >
+                */}
+                
+                <Route
+                  element={
+                    <Layout>
+                      <Outlet />
+                    </Layout>
                   }
                 >
                   <Route
