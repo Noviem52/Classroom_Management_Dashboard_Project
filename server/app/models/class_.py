@@ -10,6 +10,8 @@ if TYPE_CHECKING:
     from app.models.enrollment import Enrollment
     from app.models.subject import Subject
     from app.models.user import User
+
+
 class ClassStatus(str, enum.Enum):
     active = "active"
     archived = "archived"
@@ -31,7 +33,10 @@ class Class(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
-   
     subject: Mapped["Subject"] = relationship("Subject", back_populates="classes")
     teacher: Mapped["User"] = relationship("User", back_populates="taught_classes")
     enrollments: Mapped[list["Enrollment"]] = relationship("Enrollment", back_populates="class_")
+
+    @property
+    def department(self):
+        return self.subject.department

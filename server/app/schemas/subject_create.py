@@ -6,3 +6,10 @@ class SubjectCreate(BaseModel):
     name: str
     description: str | None = None
     department_id: int
+
+
+class SubjectUpdate(BaseModel):
+    code: str | None = None
+    name: str | None = None
+    description: str | None = None
+    department_id: int | None = None

@@ -8,4 +8,12 @@ class ClassCreate(BaseModel):
     description: str | None = None
     capacity: int = Field(gt=0)
     banner_url: str | None = None
-    
+    banner_object_key: str | None = None
+
+
+class ClassUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    capacity: int | None = None
+    banner_url: str | None = None
+    banner_object_key: str | None = None

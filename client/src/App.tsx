@@ -65,9 +65,6 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
 
-                {/* TEMP: <Authenticated> wrapper removed for UI preview.
-                    Put it back before final testing! Original version:
-
                 <Route
                   element={
                     <Authenticated key="protected" redirectOnFail="/login">
@@ -75,15 +72,6 @@ function App() {
                         <Outlet />
                       </Layout>
                     </Authenticated>
-                  }
-                >
-                */}
-                
-                <Route
-                  element={
-                    <Layout>
-                      <Outlet />
-                    </Layout>
                   }
                 >
                   <Route
