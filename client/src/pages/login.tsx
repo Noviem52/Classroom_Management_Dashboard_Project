@@ -5,11 +5,26 @@ import { Link } from "react-router";
 export const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const { mutate: login } = useLogin();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    login({ email, password });
+    setError(null);
+    setLoading(true);
+    login(
+      { email, password },
+      {
+        onError: (err: any) => {
+          setLoading(false);
+          setError(err?.message ?? "Invalid email or password.");
+        },
+        onSuccess: () => {
+          setLoading(false);
+        },
+      }
+    );
   };
 
   return (
@@ -17,6 +32,12 @@ export const Login = () => {
       <div className="w-full max-w-sm bg-card border border-border rounded-lg shadow-sm p-8">
         <h1 className="text-2xl font-semibold text-foreground mb-1">Welcome back</h1>
         <p className="text-sm text-muted-foreground mb-6">Sign in to your classroom dashboard</p>
+
+        {error && (
+          <div className="bg-destructive/10 text-destructive text-sm rounded-md px-3 py-2 mb-4">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -41,9 +62,10 @@ export const Login = () => {
           </div>
           <button
             type="submit"
-            className="w-full bg-primary text-primary-foreground rounded-md py-2 text-sm font-medium hover:opacity-90 transition"
+            disabled={loading}
+            className="w-full bg-primary text-primary-foreground rounded-md py-2 text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
           >
-            Sign In
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 

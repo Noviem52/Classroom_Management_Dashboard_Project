@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { useTable } from "@refinedev/react-table";
+import { useGetIdentity } from "@refinedev/core";
 import type { ColumnDef } from "@tanstack/react-table";
+import { Link } from "react-router";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
 
 type Department = {
@@ -10,11 +12,16 @@ type Department = {
   description: string | null;
 };
 
+type Identity = { id: number; name: string; role: "student" | "teacher" | "admin" };
+
 export const DepartmentList = () => {
+  const { data: identity } = useGetIdentity<Identity>();
+  const isAdmin = identity?.role === "admin";
+
   const columns = useMemo<ColumnDef<Department>[]>(
     () => [
-      { accessorKey: "code", header: "Code" },
-      { accessorKey: "name", header: "Name" },
+      { accessorKey: "code", header: "Code", size: 110 },
+      { accessorKey: "name", header: "Name", size: 220 },
       {
         accessorKey: "description",
         header: "Description",
@@ -26,14 +33,25 @@ export const DepartmentList = () => {
 
   const table = useTable<Department>({
     columns,
-    refineCoreProps: {
-      resource: "departments",
-    },
+    refineCoreProps: { resource: "departments" },
   });
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4 text-foreground">Departments</h1>
+    <div className="p-6">
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Departments</h1>
+          <p className="text-sm text-muted-foreground mt-1">All academic departments.</p>
+        </div>
+        {isAdmin && (
+          <Link
+            to="/departments/create"
+            className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium hover:opacity-90 transition whitespace-nowrap"
+          >
+            + Create Department
+          </Link>
+        )}
+      </div>
       <DataTable table={table} />
     </div>
   );

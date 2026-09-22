@@ -16,7 +16,9 @@ import routerProvider, {
 import { dataProvider } from "./providers/data";
 import { authProvider } from "./providers/auth";
 import { SubjectList } from "./pages/subjects/list";
+import { SubjectCreate } from "./pages/subjects/create";
 import { DepartmentList } from "./pages/departments/list";
+import { DepartmentCreate } from "./pages/departments/create";
 import { ClassList } from "./pages/classes/list";
 import { ClassShow } from "./pages/classes/show";
 import { ClassCreate } from "./pages/classes/create";
@@ -42,8 +44,16 @@ function App() {
               notificationProvider={useNotificationProvider()}
               routerProvider={routerProvider}
               resources={[
-                { name: "departments", list: "/departments" },
-                { name: "subjects", list: "/subjects" },
+                {
+                  name: "departments",
+                  list: "/departments",
+                  create: "/departments/create",
+                },
+                {
+                  name: "subjects",
+                  list: "/subjects",
+                  create: "/subjects/create",
+                },
                 {
                   name: "classes",
                   list: "/classes",
@@ -79,7 +89,9 @@ function App() {
                     element={<NavigateToResource resource="subjects" />}
                   />
                   <Route path="/subjects" element={<SubjectList />} />
+                  <Route path="/subjects/create" element={<SubjectCreate />} />
                   <Route path="/departments" element={<DepartmentList />} />
+                  <Route path="/departments/create" element={<DepartmentCreate />} />
                   <Route path="/classes" element={<ClassList />} />
                   <Route path="/classes/create" element={<ClassCreate />} />
                   <Route path="/classes/:id" element={<ClassShow />} />
