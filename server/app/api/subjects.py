@@ -10,6 +10,7 @@ from app.models.user import User, UserRole
 from app.schemas.subject import SubjectRead
 from app.schemas.subject_create import SubjectCreate, SubjectUpdate
 from app.api.deps import get_current_user, require_role
+from app.db.utils import commit_or_409
 
 router = APIRouter(prefix="/api/subjects", tags=["subjects"])
 
@@ -27,8 +28,7 @@ def list_subjects(
     if search:
         query = query.where(or_(Subject.name.ilike(f"%{search}%"), Subject.code.ilike(f"%{search}%")))
     if department:
-        query = query.join(Subject.department).where(Department.name.ilike(f"%{department}%"))
-
+        query = query.join(Subject.department).where(Department.name == department)
     total = db.scalar(select(func.count()).select_from(query.subquery()))
     offset = (page - 1) * limit
     subjects = db.execute(query.order_by(Subject.id).offset(offset).limit(limit)).unique().scalars().all()
@@ -53,14 +53,14 @@ def get_subject(subject_id: int, db: Session = Depends(get_db), current_user: Us
 def create_subject(
     payload: SubjectCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role(UserRole.teacher, UserRole.admin)),
+    current_user: User = Depends(require_role(UserRole.admin)),
 ):
     department = db.get(Department, payload.department_id)
     if department is None:
         raise HTTPException(status_code=404, detail="Department not found")
     new_subject = Subject(**payload.model_dump())
     db.add(new_subject)
-    db.commit()
+    commit_or_409(db, "A subject with this code already exists")
     db.refresh(new_subject)
     return {"data": SubjectRead.model_validate(new_subject)}
 
@@ -70,14 +70,17 @@ def update_subject(
     subject_id: int,
     payload: SubjectUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role(UserRole.teacher, UserRole.admin)),
+    current_user: User = Depends(require_role(UserRole.admin)),
 ):
     subject = db.get(Subject, subject_id)
     if subject is None:
         raise HTTPException(status_code=404, detail="Subject not found")
-    for field, value in payload.model_dump(exclude_unset=True).items():
+    data = payload.model_dump(exclude_unset=True)
+    if "department_id" in data and db.get(Department, data["department_id"]) is None:
+        raise HTTPException(status_code=404, detail="Department not found")
+    for field, value in data.items():
         setattr(subject, field, value)
-    db.commit()
+    commit_or_409(db, "A subject with this code already exists")
     db.refresh(subject)
     return {"data": SubjectRead.model_validate(subject)}
 
@@ -92,4 +95,4 @@ def delete_subject(
     if subject is None:
         raise HTTPException(status_code=404, detail="Subject not found")
     db.delete(subject)
-    db.commit()
+    commit_or_409(db, "Cannot delete a subject that still has classes. Delete its classes first.")

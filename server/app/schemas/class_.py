@@ -15,8 +15,8 @@ class ClassRead(BaseModel):
     capacity: int
     status: ClassStatus
     banner_url: str | None = None
-    banner_object_key: str | None = None
-    invite_code: str
+    banner_cld_pub_id: str | None = None
+    invite_code: str | None = None
     subject: SubjectRead
     teacher: TeacherRead
     department: DepartmentRead

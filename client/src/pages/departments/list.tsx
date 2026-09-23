@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useTable } from "@refinedev/react-table";
-import { useGetIdentity } from "@refinedev/core";
+import { useGetIdentity, useDelete } from "@refinedev/core";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Link } from "react-router";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
@@ -17,6 +17,7 @@ type Identity = { id: number; name: string; role: "student" | "teacher" | "admin
 export const DepartmentList = () => {
   const { data: identity } = useGetIdentity<Identity>();
   const isAdmin = identity?.role === "admin";
+  const { mutate: deleteOne } = useDelete();
 
   const columns = useMemo<ColumnDef<Department>[]>(
     () => [
@@ -27,8 +28,31 @@ export const DepartmentList = () => {
         header: "Description",
         cell: ({ row }) => row.original.description ?? "-",
       },
+       {
+        id: "actions",
+        header: "Actions",
+        size: 150,
+        cell: ({ row }) =>
+          isAdmin ? (
+            <div className="flex gap-3">
+              <Link to={`/departments/${row.original.id}/edit`} className="text-sm text-primary hover:underline">
+                Edit
+              </Link>
+              <button
+                onClick={() => {
+                  if (confirm(`Delete department "${row.original.name}"?`)) {
+                    deleteOne({ resource: "departments", id: row.original.id });
+                  }
+                }}
+                className="text-sm text-destructive hover:underline"
+              >
+                Delete
+              </button>
+            </div>
+          ) : null,
+      },
     ],
-    []
+    [isAdmin, deleteOne]
   );
 
   const table = useTable<Department>({

@@ -1,15 +1,10 @@
-import {
-  Refine,
-  WelcomePage,
-  Authenticated,
-} from "@refinedev/core";
-import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
+import { Refine, Authenticated } from "@refinedev/core";
+import { DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 
 import { BrowserRouter, Route, Routes, Outlet } from "react-router";
 import routerProvider, {
   NavigateToResource,
-  CatchAllNavigate,
   UnsavedChangesNotifier,
   DocumentTitleHandler,
 } from "@refinedev/react-router";
@@ -24,9 +19,15 @@ import { ClassShow } from "./pages/classes/show";
 import { ClassCreate } from "./pages/classes/create";
 import { Login } from "./pages/login";
 import { Register } from "./pages/register";
+import { DepartmentEdit } from "./pages/departments/edit";
+import { SubjectEdit } from "./pages/subjects/edit";
+import { ClassEdit } from "./pages/classes/edit";
+import { JoinClass } from "./pages/enrollments/join";
+import { MyClasses } from "./pages/enrollments/list";
+import { UserList } from "./pages/users/list";
+
 import { ErrorComponent } from "./components/refine-ui/layout/error-component";
 import { Layout } from "./components/refine-ui/layout/layout";
-import { Header } from "./components/refine-ui/layout/header";
 import { useNotificationProvider } from "./components/refine-ui/notification/use-notification-provider";
 import { Toaster } from "./components/refine-ui/notification/toaster";
 import { ThemeProvider } from "./components/refine-ui/theme/theme-provider";
@@ -48,17 +49,31 @@ function App() {
                   name: "departments",
                   list: "/departments",
                   create: "/departments/create",
+                  edit: "/departments/:id/edit",
                 },
                 {
                   name: "subjects",
                   list: "/subjects",
                   create: "/subjects/create",
+                  edit: "/subjects/:id/edit",
                 },
                 {
                   name: "classes",
                   list: "/classes",
                   show: "/classes/:id",
                   create: "/classes/create",
+                  edit: "/classes/:id/edit",
+                },
+                {
+                  name: "enrollments",
+                  list: "/my-classes",
+                  create: "/join",
+                  meta: { label: "My Classes" },
+                },
+                {
+                  name: "users",
+                  list: "/users",
+                  meta: { label: "Users" },
                 },
               ]}
               options={{
@@ -84,17 +99,20 @@ function App() {
                     </Authenticated>
                   }
                 >
-                  <Route
-                    index
-                    element={<NavigateToResource resource="subjects" />}
-                  />
+                  <Route index element={<NavigateToResource resource="subjects" />} />
                   <Route path="/subjects" element={<SubjectList />} />
                   <Route path="/subjects/create" element={<SubjectCreate />} />
+                  <Route path="/subjects/:id/edit" element={<SubjectEdit />} />
                   <Route path="/departments" element={<DepartmentList />} />
                   <Route path="/departments/create" element={<DepartmentCreate />} />
+                  <Route path="/departments/:id/edit" element={<DepartmentEdit />} />
                   <Route path="/classes" element={<ClassList />} />
                   <Route path="/classes/create" element={<ClassCreate />} />
                   <Route path="/classes/:id" element={<ClassShow />} />
+                  <Route path="/classes/:id/edit" element={<ClassEdit />} />
+                  <Route path="/my-classes" element={<MyClasses />} />
+                  <Route path="/join" element={<JoinClass />} />
+                  <Route path="/users" element={<UserList />} />
                 </Route>
 
                 <Route path="*" element={<ErrorComponent />} />
@@ -104,7 +122,6 @@ function App() {
               <UnsavedChangesNotifier />
               <DocumentTitleHandler />
             </Refine>
-            <DevtoolsPanel />
           </DevtoolsProvider>
         </ThemeProvider>
       </RefineKbarProvider>

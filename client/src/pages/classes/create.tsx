@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useCreate, useSelect } from "@refinedev/core";
 import { useNavigate, Link } from "react-router";
-import { uploadBanner } from "../../lib/upload";
-
-type SimpleOption = { value: number; label: string };
+import { openBannerUpload } from "../../lib/cloudinary";
+import { useTeachers } from "../../hooks/use-teachers";
 
 export const ClassCreate = () => {
   const navigate = useNavigate();
@@ -13,7 +12,7 @@ export const ClassCreate = () => {
   const [capacity, setCapacity] = useState(30);
   const [subjectId, setSubjectId] = useState("");
   const [teacherId, setTeacherId] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [bannerData, setBannerData] = useState<{ banner_url: string; banner_cld_pub_id: string } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,41 +25,20 @@ export const ClassCreate = () => {
     optionValue: "id",
   });
 
-  // Manual fetch for teachers, since /api/users doesn't exist yet
-  // and Refine's useSelect crashes internally on a 404 response.
-  const [teacherOptions, setTeacherOptions] = useState<SimpleOption[]>([]);
-  const [teacherLoading, setTeacherLoading] = useState(true);
-  const [teacherUnavailable, setTeacherUnavailable] = useState(false);
+  const { options: teacherOptions, loading: teacherLoading, error: teacherError } = useTeachers();
 
-  useEffect(() => {
-    const fetchTeachers = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(
-          `${import.meta.env.VITE_BACKEND_BASE_URL}/users`,
-          {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }
-        );
-        if (!res.ok) {
-          setTeacherUnavailable(true);
-          setTeacherLoading(false);
-          return;
-        }
-        const json = await res.json();
-        const list = (json?.data ?? [])
-          .filter((u: any) => u.role === "teacher")
-          .map((u: any) => ({ value: u.id, label: u.name }));
-        setTeacherOptions(list);
-      } catch (err) {
-        setTeacherUnavailable(true);
-      } finally {
-        setTeacherLoading(false);
-      }
-    };
-
-    fetchTeachers();
-  }, []);
+  const handleBannerUpload = async () => {
+    setUploading(true);
+    setError(null);
+    try {
+      const result = await openBannerUpload();
+      if (result) setBannerData(result); // null = user closed the widget, keep old banner
+    } catch (err: any) {
+      setError(err?.message ?? "Image upload failed. Try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,20 +46,8 @@ export const ClassCreate = () => {
 
     if (!name || !subjectId || !teacherId) {
       setError("Name, subject, and teacher are required.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
-    }
-
-    let bannerData = {};
-    if (file) {
-      setUploading(true);
-      try {
-        bannerData = await uploadBanner(file);
-      } catch (err) {
-        setError("Image upload failed. Try again.");
-        setUploading(false);
-        return;
-      }
-      setUploading(false);
     }
 
     setCreating(true);
@@ -94,7 +60,7 @@ export const ClassCreate = () => {
           capacity: Number(capacity),
           subject_id: Number(subjectId),
           teacher_id: Number(teacherId),
-          ...bannerData,
+          ...(bannerData ?? {}),
         },
       },
       {
@@ -105,6 +71,7 @@ export const ClassCreate = () => {
         onError: (err: any) => {
           setCreating(false);
           setError(err?.message ?? "Failed to create class.");
+          window.scrollTo({ top: 0, behavior: "smooth" });
         },
       }
     );
@@ -181,9 +148,7 @@ export const ClassCreate = () => {
               >
                 <option value="">-- Select a teacher --</option>
                 {teacherLoading && <option>Loading...</option>}
-                {teacherUnavailable && (
-                  <option disabled>Teachers endpoint not available yet</option>
-                )}
+                {teacherError && <option disabled>{teacherError}</option>}
                 {teacherOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
@@ -205,12 +170,21 @@ export const ClassCreate = () => {
 
           <div>
             <label className={labelClass}>Banner Image</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-secondary file:text-secondary-foreground file:text-sm file:font-medium hover:file:opacity-90"
-            />
+            <button
+              type="button"
+              onClick={handleBannerUpload}
+              disabled={uploading}
+              className="rounded-md border border-input bg-secondary px-4 py-2 text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
+            >
+              {uploading ? "Uploading..." : bannerData ? "Change Banner Image" : "Choose Banner Image"}
+            </button>
+            {bannerData && (
+              <img
+                src={bannerData.banner_url}
+                alt="Banner preview"
+                className="mt-3 rounded-md max-h-40 border border-border"
+              />
+            )}
           </div>
 
           <button
@@ -218,7 +192,7 @@ export const ClassCreate = () => {
             disabled={uploading || creating}
             className="w-full bg-primary text-primary-foreground rounded-md py-2 text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
           >
-            {uploading ? "Uploading image..." : creating ? "Creating..." : "Create Class"}
+            {creating ? "Creating..." : "Create Class"}
           </button>
         </form>
       </div>

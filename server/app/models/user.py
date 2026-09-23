@@ -32,4 +32,6 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
     taught_classes: Mapped[list["Class"]] = relationship("Class", back_populates="teacher")
-    enrollments: Mapped[list["Enrollment"]] = relationship("Enrollment", back_populates="student")
+    enrollments: Mapped[list["Enrollment"]] = relationship(
+        "Enrollment", back_populates="student", cascade="all, delete-orphan"
+    )

@@ -1,60 +1,76 @@
+from sqlalchemy import select
+
 from app.db.session import SessionLocal
 from app.core.security import hash_password
 from app.models.department import Department
 from app.models.subject import Subject
 from app.models.user import User, UserRole
-from app.models.class_ import Class          
-from app.models.enrollment import Enrollment
+from app.models.class_ import Class  # noqa: F401  (registers mapper)
+from app.models.enrollment import Enrollment  # noqa: F401
+
+
+def get_or_create(db, model, lookup: dict, defaults: dict | None = None):
+    """Return the existing row matching `lookup`, or create it."""
+    obj = db.execute(select(model).filter_by(**lookup)).scalar_one_or_none()
+    if obj is not None:
+        return obj, False
+    obj = model(**lookup, **(defaults or {}))
+    db.add(obj)
+    db.flush()
+    return obj, True
 
 
 def run():
     db = SessionLocal()
+    created = 0
     try:
-        departments = [
-            Department(code="CS", name="Computer Science"),
-            Department(code="MATH", name="Mathematics"),
-            Department(code="ENG", name="English"),
-            Department(code="SCI", name="Science"),
+        dept_data = [
+            ("CS", "Computer Science"),
+            ("MATH", "Mathematics"),
+            ("ENG", "English"),
+            ("SCI", "Science"),
         ]
-        db.add_all(departments)
-        db.flush()  # assigns IDs before subjects reference them
+        depts = {}
+        for code, name in dept_data:
+            d, new = get_or_create(db, Department, {"code": code}, {"name": name})
+            depts[code] = d
+            created += new
 
-        subjects = [
-            Subject(code="CS101", name="Intro to Programming", department_id=departments[0].id),
-            Subject(code="CS201", name="Data Structures", department_id=departments[0].id),
-            Subject(code="CS301", name="Databases", department_id=departments[0].id),
-            Subject(code="MATH101", name="Calculus I", department_id=departments[1].id),
-            Subject(code="MATH201", name="Linear Algebra", department_id=departments[1].id),
-            Subject(code="MATH301", name="Statistics", department_id=departments[1].id),
-            Subject(code="ENG101", name="Composition", department_id=departments[2].id),
-            Subject(code="ENG201", name="Literature", department_id=departments[2].id),
-            Subject(code="SCI101", name="Biology", department_id=departments[3].id),
-            Subject(code="SCI201", name="Chemistry", department_id=departments[3].id),
+        subject_data = [
+            ("CS101", "Intro to Programming", "CS"),
+            ("CS201", "Data Structures", "CS"),
+            ("CS301", "Databases", "CS"),
+            ("MATH101", "Calculus I", "MATH"),
+            ("MATH201", "Linear Algebra", "MATH"),
+            ("MATH301", "Statistics", "MATH"),
+            ("ENG101", "Composition", "ENG"),
+            ("ENG201", "Literature", "ENG"),
+            ("SCI101", "Biology", "SCI"),
+            ("SCI201", "Chemistry", "SCI"),
         ]
-        db.add_all(subjects)
+        for code, name, dept_code in subject_data:
+            _, new = get_or_create(
+                db, Subject, {"code": code}, {"name": name, "department_id": depts[dept_code].id}
+            )
+            created += new
 
-        teachers = [
-            User(
-                email=f"teacher{i}@school.test",
-                name=f"Teacher {i}",
-                password_hash=hash_password("password123"),
-                role=UserRole.teacher,
+        users = [("admin@school.test", "Admin", UserRole.admin)]
+        users += [(f"teacher{i}@school.test", f"Teacher {i}", UserRole.teacher) for i in range(1, 5)]
+        users += [(f"student{i}@school.test", f"Student {i}", UserRole.student) for i in range(1, 7)]
+        for email, name, role in users:
+            _, new = get_or_create(
+                db,
+                User,
+                {"email": email},
+                {"name": name, "role": role, "password_hash": hash_password("password123")},
             )
-            for i in range(1, 5)
-        ]
-        students = [
-            User(
-                email=f"student{i}@school.test",
-                name=f"Student {i}",
-                password_hash=hash_password("password123"),
-                role=UserRole.student,
-            )
-            for i in range(1, 7)
-        ]
-        db.add_all(teachers + students)
+            created += new
 
         db.commit()
-        print("Seed complete: 4 departments, 10 subjects, 4 teachers, 6 students")
+        print(f"Seed complete. {created} new rows created (existing rows were skipped).")
+    except Exception:
+        db.rollback()
+        raise
     finally:
         db.close()
 

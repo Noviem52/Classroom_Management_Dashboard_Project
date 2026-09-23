@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useTable } from "@refinedev/react-table";
-import { useSelect, useGetIdentity } from "@refinedev/core";
+import { useSelect, useGetIdentity, useDelete } from "@refinedev/core";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Link } from "react-router";
 import { DataTable } from "@/components/refine-ui/data-table/data-table";
@@ -18,6 +18,7 @@ type Identity = { id: number; name: string; role: "student" | "teacher" | "admin
 export const SubjectList = () => {
   const { data: identity } = useGetIdentity<Identity>();
   const isAdmin = identity?.role === "admin";
+  const { mutate: deleteOne } = useDelete();
 
   const [searchInput, setSearchInput] = useState("");
   const [departmentValue, setDepartmentValue] = useState("");
@@ -38,10 +39,34 @@ export const SubjectList = () => {
         size: 180,
         accessorFn: (row) => row.department?.name ?? "-",
       },
+      {
+        id: "actions",
+        header: "Actions",
+        size: 150,
+        cell: ({ row }) =>
+          isAdmin ? (
+            <div className="flex gap-3">
+              <Link to={`/subjects/${row.original.id}/edit`} className="text-sm text-primary hover:underline">
+                Edit
+              </Link>
+              <button
+                onClick={() => {
+                  if (confirm(`Delete subject "${row.original.name}"?`)) {
+                    deleteOne({ resource: "subjects", id: row.original.id });
+                  }
+                }}
+                className="text-sm text-destructive hover:underline"
+              >
+                Delete
+              </button>
+            </div>
+          ) : null,
+      },
     ],
-    []
+    [isAdmin, deleteOne]
   );
 
+  // ... rest of the file unchanged (const table = useTable..., applyFilters, return JSX)
   const table = useTable<Subject>({
     columns,
     refineCoreProps: { resource: "subjects" },

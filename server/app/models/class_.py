@@ -28,15 +28,16 @@ class Class(Base):
     capacity: Mapped[int] = mapped_column(nullable=False)
     status: Mapped[ClassStatus] = mapped_column(Enum(ClassStatus), default=ClassStatus.active, nullable=False)
     banner_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    banner_object_key: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    banner_cld_pub_id: Mapped[str | None] = mapped_column(String(500), nullable=True)
     invite_code: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
     subject: Mapped["Subject"] = relationship("Subject", back_populates="classes")
     teacher: Mapped["User"] = relationship("User", back_populates="taught_classes")
-    enrollments: Mapped[list["Enrollment"]] = relationship("Enrollment", back_populates="class_")
-
+    enrollments: Mapped[list["Enrollment"]] = relationship(
+        "Enrollment", back_populates="class_", cascade="all, delete-orphan"
+    )
     @property
     def department(self):
         return self.subject.department

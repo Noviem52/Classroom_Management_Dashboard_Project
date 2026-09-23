@@ -10,7 +10,14 @@ export const authProvider: AuthProvider = {
       body: JSON.stringify({ email, password }),
     });
     if (!res.ok) {
-      return { success: false, error: { message: "Login failed", name: "Invalid credentials" } };
+      const body = await res.json().catch(() => ({}));
+      return {
+        success: false,
+        error: {
+          name: "Login failed",
+          message: body?.detail ?? "Invalid email or password",
+        },
+      };
     }
     const { data } = await res.json();
     localStorage.setItem("token", data.access_token);
@@ -25,7 +32,13 @@ export const authProvider: AuthProvider = {
       body: JSON.stringify({ name, email, password, role }),
     });
     if (!res.ok) {
-      return { success: false, error: { message: "Registration failed", name: "Error" } };
+      const body = await res.json().catch(() => ({}));
+      const message =
+        typeof body?.detail === "string" ? body.detail : "Registration failed";
+      return {
+        success: false,
+        error: { name: "Registration failed", message },
+      };
     }
     const { data } = await res.json();
     localStorage.setItem("token", data.access_token);
@@ -56,7 +69,8 @@ export const authProvider: AuthProvider = {
   },
 
   onError: async (error) => {
-    if (error?.statusCode === 401) return { logout: true, redirectTo: "/login" };
+    if (error?.statusCode === 401)
+      return { logout: true, redirectTo: "/login" };
     return { error };
   },
 };

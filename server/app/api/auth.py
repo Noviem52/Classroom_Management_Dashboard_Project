@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.auth import RegisterRequest, LoginRequest, AuthResponse
 from app.schemas.user import UserRead
 from app.core.security import hash_password, verify_password, create_access_token
@@ -14,6 +14,8 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
+    if payload.role == UserRole.admin:
+        raise HTTPException(status_code=403, detail="Admin accounts cannot be self-registered")
     existing = db.execute(select(User).where(User.email == payload.email)).scalar_one_or_none()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
