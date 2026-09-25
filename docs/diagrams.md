@@ -109,6 +109,5 @@ flowchart LR
     NetlifyLive -->|"VITE_BACKEND_BASE_URL"| RenderLive
 ```
 
-**Note:** this reflects the project's actual setup — deploy-on-push via Render/Netlify's built-in Git integration. There's no separate GitHub Actions workflow running tests before deploy; if that gets added later, it would sit between "git push" and the two build steps above.
 
 **`npm run dev` vs `npm run build`:** `npm run dev` (top-left box) is only ever run locally, by a developer, while coding — it starts a live-reloading dev server and never touches production. `npm run build` (inside the Netlify pipeline) is what actually produces the static files that get deployed; Netlify runs this itself on every push, not `npm run dev`.
