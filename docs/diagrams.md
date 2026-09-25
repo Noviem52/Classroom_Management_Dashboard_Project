@@ -1,7 +1,5 @@
 # Project Diagrams
 
-These are written in [Mermaid](https://mermaid.js.org/), which GitHub renders natively inside any `.md` file — no image export needed. Drop this file into `docs/diagrams.md` in the repo (or paste individual blocks into the README).
-
 ## 1. Architecture Diagram
 
 ```mermaid
