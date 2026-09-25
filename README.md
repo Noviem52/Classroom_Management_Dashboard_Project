@@ -111,7 +111,8 @@ npm run dev
 The app runs at `http://localhost:5173`.
 
 ## Default Accounts
-All passwords are **password123**:
+All passwords are **password123**
+
 Admin  : admin@school.test
 Teacher: teacher1@school.test, 
          teacher2@school.test
